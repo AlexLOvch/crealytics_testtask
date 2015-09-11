@@ -31,14 +31,18 @@ class Float
 end
 
 class Modifier
+  LINES_PER_FILE = 120000
+	DEFAULT_CSV_OPTIONS = { :col_sep => "\t", :headers => :first_row }
+
 
 	KEYWORD_UNIQUE_ID = 'Keyword Unique ID'
 	LAST_VALUE_WINS = ['Account ID', 'Account Name', 'Campaign', 'Ad Group', 'Keyword', 'Keyword Type', 'Subid', 'Paused', 'Max CPC', 'Keyword Unique ID', 'ACCOUNT', 'CAMPAIGN', 'BRAND', 'BRAND+CATEGORY', 'ADGROUP', 'KEYWORD']
 	LAST_REAL_VALUE_WINS = ['Last Avg CPC', 'Last Avg Pos']
 	INT_VALUES = ['Clicks', 'Impressions', 'ACCOUNT - Clicks', 'CAMPAIGN - Clicks', 'BRAND - Clicks', 'BRAND+CATEGORY - Clicks', 'ADGROUP - Clicks', 'KEYWORD - Clicks']
 	FLOAT_VALUES = ['Avg CPC', 'CTR', 'Est EPC', 'newBid', 'Costs', 'Avg Pos']
+	COMMISSION_VALUES =['Commission Value', 'ACCOUNT - Commission Value', 'CAMPAIGN - Commission Value', 'BRAND - Commission Value', 'BRAND+CATEGORY - Commission Value', 'ADGROUP - Commission Value', 'KEYWORD - Commission Value']
+  NUMBER_OF_COMMISSIONS = ['number of commissions']
 
-  LINES_PER_FILE = 120000
 
 	def initialize(saleamount_factor, cancellation_factor)
 		@saleamount_factor = saleamount_factor
@@ -116,10 +120,10 @@ class Modifier
 		FLOAT_VALUES.each do |key|
 			hash[key] = hash[key][0].from_german_to_f.to_german_s
 		end
-		['number of commissions'].each do |key|
+		NUMBER_OF_COMMISSIONS.each do |key|
 			hash[key] = (@cancellation_factor * hash[key][0].from_german_to_f).to_german_s
 		end
-		['Commission Value', 'ACCOUNT - Commission Value', 'CAMPAIGN - Commission Value', 'BRAND - Commission Value', 'BRAND+CATEGORY - Commission Value', 'ADGROUP - Commission Value', 'KEYWORD - Commission Value'].each do |key|
+		COMMISSION_VALUES.each do |key|
 			hash[key] = (@cancellation_factor * @saleamount_factor * hash[key][0].from_german_to_f).to_german_s
 		end
 		hash
@@ -143,7 +147,6 @@ class Modifier
 		result
 	end
 
-	DEFAULT_CSV_OPTIONS = { :col_sep => "\t", :headers => :first_row }
 
 	def parse(file)
 		CSV.read(file, DEFAULT_CSV_OPTIONS)
@@ -178,7 +181,9 @@ class Modifier
 	end
 end
 
-modified = input = latest('project_2012-07-27_2012-10-10_performancedata')
+#modified = input = latest('project_2012-07-27_2012-10-10_performancedata')
+#modified = input = latest('sample')
+modified = input = 'sample.txt'
 modification_factor = 1
 cancellaction_factor = 0.4
 modifier = Modifier.new(modification_factor, cancellaction_factor)
