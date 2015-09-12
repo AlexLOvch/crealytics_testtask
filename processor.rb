@@ -1,5 +1,6 @@
 require File.expand_path('lib/combiner',File.dirname(__FILE__))
 require File.expand_path('lib/modifier',File.dirname(__FILE__))
+require File.expand_path('lib/merger',File.dirname(__FILE__))
 require 'csv'
 require 'date'
 
@@ -23,7 +24,13 @@ class Processor
   LINES_PER_FILE = 120000
 	DEFAULT_CSV_OPTIONS = { :col_sep => "\t", :headers => :first_row }
 
-	KEYWORD_UNIQUE_ID = 'Keyword Unique ID'
+  KEYWORD_UNIQUE_ID = 'Keyword Unique ID'
+  LAST_VALUE_WINS = ['Account ID', 'Account Name', 'Campaign', 'Ad Group', 'Keyword', 'Keyword Type', 'Subid', 'Paused', 'Max CPC', 'Keyword Unique ID', 'ACCOUNT', 'CAMPAIGN', 'BRAND', 'BRAND+CATEGORY', 'ADGROUP', 'KEYWORD']
+  LAST_REAL_VALUE_WINS = ['Last Avg CPC', 'Last Avg Pos']
+  INT_VALUES = ['Clicks', 'Impressions', 'ACCOUNT - Clicks', 'CAMPAIGN - Clicks', 'BRAND - Clicks', 'BRAND+CATEGORY - Clicks', 'ADGROUP - Clicks', 'KEYWORD - Clicks']
+  FLOAT_VALUES = ['Avg CPC', 'CTR', 'Est EPC', 'newBid', 'Costs', 'Avg Pos']
+  COMMISSION_VALUES = ['Commission Value', 'ACCOUNT - Commission Value', 'CAMPAIGN - Commission Value', 'BRAND - Commission Value', 'BRAND+CATEGORY - Commission Value', 'ADGROUP - Commission Value', 'KEYWORD - Commission Value']
+  NUMBER_OF_COMMISSIONS = ['number of commissions']
 
 	def initialize(saleamount_factor, cancellation_factor)
 		@saleamount_factor = saleamount_factor
@@ -39,7 +46,16 @@ class Processor
 			value[KEYWORD_UNIQUE_ID]
 		end.combine(input_enumerator)
 
-		merger = Modifier.new(@saleamount_factor, @cancellation_factor, combiner).modify
+    merger = Merger.new(combiner, LAST_VALUE_WINS, LAST_REAL_VALUE_WINS).merge
+
+
+		modifier_params = { stringify: INT_VALUES,
+			multiply: [
+				{ keys: COMMISSION_VALUES, by: (@cancellation_factor * @saleamount_factor)},
+				{ keys: NUMBER_OF_COMMISSIONS, by: @cancellation_factor}
+			]
+		}
+		modifier = Modifier.new(merger, modifier_params).modify
 
     done = false
     file_index = 0
@@ -50,13 +66,13 @@ class Processor
         line_count = 0
 			  while line_count < LINES_PER_FILE
 				  begin
-					  merged = merger.next
+					  modified = modifier.next
 					  if not headers_written
-						  csv << merged.keys
+						  csv << modified.keys
 						  headers_written = true
               line_count +=1
 					  end
-					  csv << merged
+					  csv << modified
             line_count +=1
 				  rescue StopIteration
             done = true
