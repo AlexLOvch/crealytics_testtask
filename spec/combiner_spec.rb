@@ -1,43 +1,11 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__))
 require 'combiner'
 
-def read_from_enumerator(enumerator)
-	result = []
-	loop do
-		begin
-			result << enumerator.next
-		rescue StopIteration
-			break
-		end
-	end
-	result
-end
-
-RSpec::Matchers.define :be_empty do
-  match do |enumerator|
-	read_from_enumerator(enumerator).empty?
-  end
-end
-
-RSpec::Matchers.define :return_elements do |*expected|
-	read_elements = nil
-	match do |enumerator|
-		read_elements = read_from_enumerator(enumerator)
-		read_elements == expected
-	end
-	failure_message_for_should do |enumerator|
-		"expected that #{enumerator} would return #{expected.inspect}, but it returned #{read_elements.inspect}"
-	end
-end
-
 describe Combiner do
 	let(:key_extractor) { Proc.new {|arg| arg} }
 	let(:input_enumerators) { [] }
 	let(:combiner) { Combiner.new(&key_extractor) }
 
-	def enumerator_for(*array)
-		array.to_enum :each
-	end
 	context "#combine" do
 		subject { combiner.combine(*input_enumerators) }
 	
