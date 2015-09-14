@@ -13,3 +13,13 @@ Plan:
 - create a generator for create data example(done for now)
 - create specs and extract modifier class from modifier.rb
 - create specs and extract merger from modifier class
+
+Short status for 12.09
+  - Merger and modifier now is separate universal and customizable classes
+  - Processor.rb used for set up needed params and start processing(files produced by old modifier and new processor are equal)
+
+TODO:
+- Specs should be added for Merger as well as for Modifier classes
+- Processor.rb should be refactored(don't have enought time for that)
+- Merger and Modifiyer can be relived from CSV things(like .headers and .fields) to be more universal(in this case they can be used with another data source)
+- temp files(like sample etc) should be moved or deleted
