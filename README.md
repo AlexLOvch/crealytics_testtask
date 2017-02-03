@@ -10,9 +10,9 @@ I'd like you to do the following:
 - create a git repository containing the initial files and do regular
   and small commits to log your process.
 - send me your git bundle containing your changes.
-------
 
 Candidate answers:
+------
 As for that modifier description:
   It opens last csv file(base on fie name contains date)
   It sorts that file by Clicks field descendand
